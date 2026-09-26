@@ -1,5 +1,8 @@
+from typing import List
+
+
 class Solution:
-    def firstMissingPositive(self, nums):
+    def firstMissingPositive(self, nums: List[int]) -> int:
         n = len(nums)
         
         for i in range(n):
@@ -14,9 +17,3 @@ class Solution:
         
         # If all indices are correct, the smallest missing positive is n + 1
         return n + 1
-
-# Example usage:
-solution = Solution()
-print(solution.firstMissingPositive([1, 2, 0]))      # Output: 3
-print(solution.firstMissingPositive([3, 4, -1, 1]))  # Output: 2
-print(solution.firstMissingPositive([7, 8, 9, 11, 12]))  # Output: 1

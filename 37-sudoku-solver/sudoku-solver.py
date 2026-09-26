@@ -1,11 +1,14 @@
+from typing import List, Optional, Tuple
+
+
 class Solution:
-    def solveSudoku(self, board):
+    def solveSudoku(self, board: List[List[str]]) -> None:
         """
         Do not return anything, modify board in-place instead.
         """
         self.solve(board)
 
-    def solve(self, board):
+    def solve(self, board: List[List[str]]) -> bool:
         # Find the next empty cell
         row, col = self.find_empty(board)
 
@@ -28,7 +31,7 @@ class Solution:
         # If no solution is found, return False
         return False
 
-    def find_empty(self, board):
+    def find_empty(self, board: List[List[str]]) -> Tuple[Optional[int], Optional[int]]:
         # Find the next empty cell
         for row in range(9):
             for col in range(9):
@@ -36,7 +39,7 @@ class Solution:
                     return row, col
         return None, None
 
-    def is_valid(self, board, row, col, digit):
+    def is_valid(self, board: List[List[str]], row: int, col: int, digit: str) -> bool:
         # Check if the digit is present in the same row or column
         if digit in board[row] or digit in [board[i][col] for i in range(9)]:
             return False

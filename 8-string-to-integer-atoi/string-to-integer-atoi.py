@@ -1,5 +1,5 @@
 class Solution:
-    def myAtoi(self, s):
+    def myAtoi(self, s: str) -> int:
         # Step 1: Whitespace
         s = s.lstrip()
         if not s:

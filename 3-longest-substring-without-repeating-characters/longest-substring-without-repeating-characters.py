@@ -1,5 +1,5 @@
 class Solution:
-    def lengthOfLongestSubstring(self, s):
+    def lengthOfLongestSubstring(self, s: str) -> int:
         # Initialize pointers and variables
         left, max_len = 0, 0
         char_index = {}

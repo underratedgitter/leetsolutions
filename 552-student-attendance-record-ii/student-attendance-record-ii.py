@@ -1,5 +1,5 @@
 class Solution:
-    def checkRecord(self, n):
+    def checkRecord(self, n: int) -> int:
         MOD = 10**9 + 7
 
         # dp[length][absents][late_streak]
@@ -35,9 +35,3 @@ class Solution:
                 result %= MOD
 
         return result
-
-# Example usage:
-solution = Solution()
-print(solution.checkRecord(2))   # Output: 8
-print(solution.checkRecord(1))   # Output: 3
-print(solution.checkRecord(10101))  # Output: 183236316

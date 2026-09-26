@@ -1,5 +1,8 @@
+from typing import List
+
+
 class Solution:
-    def threeSum(self, nums):
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
         result = []
         nums.sort()  # Sort the list for easy processing
 
