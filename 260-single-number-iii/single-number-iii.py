@@ -1,5 +1,8 @@
+from typing import List
+
+
 class Solution:
-    def singleNumber(self, nums):
+    def singleNumber(self, nums: List[int]) -> List[int]:
         # Step 1: XOR all elements to get the XOR of the two unique numbers
         xor_all = 0
         for num in nums:
@@ -19,9 +22,3 @@ class Solution:
                 num2 ^= num
         
         return [num1, num2]
-
-# Example usage:
-solution = Solution()
-print(solution.singleNumber([1, 2, 1, 3, 2, 5]))  # Output: [3, 5] or [5, 3]
-print(solution.singleNumber([-1, 0]))             # Output: [-1, 0] or [0, -1]
-print(solution.singleNumber([0, 1]))              # Output: [1, 0] or [0, 1]

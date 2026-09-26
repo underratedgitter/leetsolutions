@@ -1,8 +1,10 @@
+from collections import defaultdict
+from typing import DefaultDict, List
+
+
 class Solution:
-    def beautifulSubsets(self, nums, k):
-        from collections import defaultdict
-        
-        def backtrack(index, freq_map):
+    def beautifulSubsets(self, nums: List[int], k: int) -> int:
+        def backtrack(index: int, freq_map: DefaultDict[int, int]) -> int:
             if index == len(nums):
                 return 1
             
@@ -22,8 +24,3 @@ class Solution:
         # Start backtracking from index 0 with an empty frequency map
         total_beautiful_subsets = backtrack(0, freq_map) - 1  # Subtract 1 to exclude the empty subset
         return total_beautiful_subsets
-
-# Example usage:
-sol = Solution()
-print(sol.beautifulSubsets([2, 4, 6], 2))  # Output: 4
-print(sol.beautifulSubsets([1], 1))       # Output: 1

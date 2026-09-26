@@ -1,5 +1,5 @@
 class Solution:
-    def reverse(self, x):
+    def reverse(self, x: int) -> int:
         # Check if the number is negative
         is_negative = x < 0
         

@@ -1,5 +1,5 @@
 class Solution:
-    def isPalindrome(self, x):
+    def isPalindrome(self, x: int) -> bool:
         # Handle negative numbers and single-digit numbers
         if x < 0 or (x < 10 and x >= 0):
             return x >= 0

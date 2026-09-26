@@ -1,5 +1,8 @@
+from typing import List, Optional
+
+
 class Solution:
-    def twoSum(self, nums, target):
+    def twoSum(self, nums: List[int], target: int) -> Optional[List[int]]:
         # Create a dictionary to store the complement of each number
         complement_dict = {}
 
