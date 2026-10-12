@@ -3,18 +3,85 @@
 Each problem lives in its own hyphen/digit-prefixed directory, so modules
 can't be imported normally -- they're loaded by file path instead.
 """
+import glob
 import importlib.util
 import os
+from typing import List, Optional
+
+import pytest
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load_solution(relative_path):
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+# Names LeetCode's judge provides without an import. Solutions are kept as
+# submitted, so the loader supplies them; a file's own ListNode wins.
+LEETCODE_GLOBALS = {"List": List, "Optional": Optional, "ListNode": ListNode, "TreeNode": TreeNode}
+
+
+def load_module(relative_path):
     full_path = os.path.join(REPO_ROOT, relative_path)
     spec = importlib.util.spec_from_file_location("solution_module", full_path)
     module = importlib.util.module_from_spec(spec)
+    module.__dict__.update(LEETCODE_GLOBALS)
     spec.loader.exec_module(module)
-    return module.Solution()
+    return module
+
+
+def load_solution(relative_path):
+    return load_module(relative_path).Solution()
+
+
+def to_linked(node_cls, values):
+    head = None
+    for value in reversed(values):
+        head = node_cls(value, head)
+    return head
+
+
+def from_linked(head):
+    values = []
+    while head:
+        values.append(head.val)
+        head = head.next
+    return values
+
+
+def to_tree(values):
+    """Build a tree from LeetCode's level-order list, None marking a gap."""
+    if not values:
+        return None
+    nodes = [None if v is None else TreeNode(v) for v in values]
+    children = iter(nodes[1:])
+    for node in nodes:
+        if node is None:
+            continue
+        node.left = next(children, None)
+        node.right = next(children, None)
+    return nodes[0]
+
+
+SOLUTION_FILES = sorted(
+    os.path.relpath(path, REPO_ROOT)
+    for path in glob.glob(os.path.join(REPO_ROOT, "[0-9]*-*", "*.py"))
+)
+
+
+@pytest.mark.parametrize("relative_path", SOLUTION_FILES)
+def test_every_solution_loads(relative_path):
+    assert hasattr(load_module(relative_path), "Solution")
 
 
 def test_two_sum():
@@ -161,3 +228,187 @@ def test_int_to_roman():
     assert sol.intToRoman(3749) == "MMMDCCXLIX"
     assert sol.intToRoman(58) == "LVIII"
     assert sol.intToRoman(1994) == "MCMXCIV"
+
+
+def test_distribute_coins():
+    sol = load_solution("1021-distribute-coins-in-binary-tree/distribute-coins-in-binary-tree.py")
+    assert sol.distributeCoins(to_tree([3, 0, 0])) == 2
+    assert sol.distributeCoins(to_tree([0, 3, 0])) == 3
+
+
+def test_common_chars():
+    sol = load_solution("1044-find-common-characters/find-common-characters.py")
+    assert sorted(sol.commonChars(["bella", "label", "roller"])) == ["e", "l", "l"]
+    assert sorted(sol.commonChars(["cool", "lock", "cook"])) == ["c", "o"]
+
+
+def test_height_checker():
+    sol = load_solution("1137-height-checker/height-checker.py")
+    assert sol.heightChecker([1, 1, 4, 2, 1, 3]) == 3
+    assert sol.heightChecker([5, 1, 2, 3, 4]) == 5
+    assert sol.heightChecker([1, 2, 3, 4, 5]) == 0
+
+
+def test_relative_sort_array():
+    sol = load_solution("1217-relative-sort-array/relative-sort-array.py")
+    assert sol.relativeSortArray(
+        [2, 3, 1, 3, 2, 4, 6, 7, 9, 2, 19], [2, 1, 4, 3, 9, 6]
+    ) == [2, 2, 2, 1, 4, 3, 3, 9, 6, 7, 19]
+    assert sol.relativeSortArray([28, 6, 22, 8, 44, 17], [22, 28, 8, 6]) == [22, 28, 8, 6, 17, 44]
+
+
+def test_roman_to_int():
+    sol = load_solution("13-roman-to-integer/roman-to-integer.py")
+    assert sol.romanToInt("III") == 3
+    assert sol.romanToInt("LVIII") == 58
+    assert sol.romanToInt("MCMXCIV") == 1994
+
+
+def test_palindrome_partitioning():
+    sol = load_solution("131-palindrome-partitioning/palindrome-partitioning.py")
+    assert sorted(sol.partition("aab")) == [["a", "a", "b"], ["aa", "b"]]
+    assert sol.partition("a") == [["a"]]
+
+
+def test_equal_substring():
+    sol = load_solution(
+        "1321-get-equal-substrings-within-budget/get-equal-substrings-within-budget.py"
+    )
+    assert sol.equalSubstring("abcd", "bcdf", 3) == 3
+    assert sol.equalSubstring("abcd", "cdef", 3) == 1
+    assert sol.equalSubstring("abcd", "acde", 0) == 1
+
+
+def test_longest_common_prefix():
+    sol = load_solution("14-longest-common-prefix/longest-common-prefix.py")
+    assert sol.longestCommonPrefix(["flower", "flow", "flight"]) == "fl"
+    assert sol.longestCommonPrefix(["dog", "racecar", "car"]) == ""
+
+
+def test_word_break_ii():
+    sol = load_solution("140-word-break-ii/word-break-ii.py")
+    assert sorted(sol.wordBreak("catsanddog", ["cat", "cats", "and", "sand", "dog"])) == [
+        "cat sand dog",
+        "cats and dog",
+    ]
+    assert sorted(
+        sol.wordBreak("pineapplepenapple", ["apple", "pen", "applepen", "pine", "pineapple"])
+    ) == ["pine apple pen apple", "pine applepen apple", "pineapple pen apple"]
+    assert sol.wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"]) == []
+
+
+def test_letter_combinations():
+    sol = load_solution(
+        "17-letter-combinations-of-a-phone-number/letter-combinations-of-a-phone-number.py"
+    )
+    assert sorted(sol.letterCombinations("23")) == [
+        "ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf",
+    ]
+    assert sol.letterCombinations("") == []
+    assert sorted(sol.letterCombinations("2")) == ["a", "b", "c"]
+
+
+def test_add_two_numbers():
+    module = load_module("2-add-two-numbers/add-two-numbers.py")
+    sol, node = module.Solution(), module.ListNode
+    assert from_linked(sol.addTwoNumbers(to_linked(node, [2, 4, 3]), to_linked(node, [5, 6, 4]))) == [7, 0, 8]
+    assert from_linked(sol.addTwoNumbers(to_linked(node, [0]), to_linked(node, [0]))) == [0]
+    assert from_linked(
+        sol.addTwoNumbers(to_linked(node, [9] * 7), to_linked(node, [9] * 4))
+    ) == [8, 9, 9, 9, 0, 0, 0, 1]
+
+
+def test_merge_k_lists():
+    module = load_module("23-merge-k-sorted-lists/merge-k-sorted-lists.py")
+    sol, node = module.Solution(), module.ListNode
+    lists = [to_linked(node, v) for v in ([1, 4, 5], [1, 3, 4], [2, 6])]
+    assert from_linked(sol.mergeKLists(lists)) == [1, 1, 2, 3, 4, 4, 5, 6]
+    assert from_linked(sol.mergeKLists([])) == []
+    assert from_linked(sol.mergeKLists([None])) == []
+
+
+def test_reverse_k_group():
+    module = load_module("25-reverse-nodes-in-k-group/reverse-nodes-in-k-group.py")
+    sol, node = module.Solution(), module.ListNode
+    assert from_linked(sol.reverseKGroup(to_linked(node, [1, 2, 3, 4, 5]), 2)) == [2, 1, 4, 3, 5]
+    assert from_linked(sol.reverseKGroup(to_linked(node, [1, 2, 3, 4, 5]), 3)) == [3, 2, 1, 4, 5]
+
+
+def test_append_characters():
+    sol = load_solution(
+        "2572-append-characters-to-string-to-make-subsequence/"
+        "append-characters-to-string-to-make-subsequence.py"
+    )
+    assert sol.appendCharacters("coaching", "coding") == 4
+    assert sol.appendCharacters("abcde", "a") == 0
+    assert sol.appendCharacters("z", "abcde") == 5
+
+
+def test_find_substring():
+    sol = load_solution(
+        "30-substring-with-concatenation-of-all-words/"
+        "substring-with-concatenation-of-all-words.py"
+    )
+    assert sorted(sol.findSubstring("barfoothefoobarman", ["foo", "bar"])) == [0, 9]
+    assert sol.findSubstring("wordgoodgoodgoodbestword", ["word", "good", "best", "word"]) == []
+    assert sorted(sol.findSubstring("barfoofoobarthefoobarman", ["bar", "foo", "the"])) == [6, 9, 12]
+
+
+def test_longest_valid_parentheses():
+    sol = load_solution("32-longest-valid-parentheses/longest-valid-parentheses.py")
+    assert sol.longestValidParentheses("(()") == 2
+    assert sol.longestValidParentheses(")()())") == 4
+    assert sol.longestValidParentheses("") == 0
+
+
+def test_reverse_string_in_place():
+    sol = load_solution("344-reverse-string/reverse-string.py")
+    s = list("hello")
+    assert sol.reverseString(s) is None
+    assert s == list("olleh")
+    s = list("Hannah")
+    sol.reverseString(s)
+    assert s == list("hannaH")
+
+
+def test_longest_palindrome_length():
+    sol = load_solution("409-longest-palindrome/longest-palindrome.py")
+    assert sol.longestPalindrome("abccccdd") == 7
+    assert sol.longestPalindrome("a") == 1
+
+
+def test_get_permutation():
+    sol = load_solution("60-permutation-sequence/permutation-sequence.py")
+    assert sol.getPermutation(3, 3) == "213"
+    assert sol.getPermutation(4, 9) == "2314"
+    assert sol.getPermutation(3, 1) == "123"
+
+
+def test_replace_words():
+    sol = load_solution("648-replace-words/replace-words.py")
+    assert (
+        sol.replaceWords(["cat", "bat", "rat"], "the cattle was rattled by the battery")
+        == "the cat was rat by the bat"
+    )
+    assert sol.replaceWords(["a", "b", "c"], "aadsfasf absbs bbab cadsfafs") == "a a b c"
+
+
+def test_is_number():
+    sol = load_solution("65-valid-number/valid-number.py")
+    for valid in ["0", "2", "0089", "-0.1", "+3.14", "4.", "-.9", "2e10", "-90E3", "3e+7", "+6e-1", "53.5e93", "-123.456e789"]:
+        assert sol.isNumber(valid) is True, valid
+    for invalid in ["e", ".", "abc", "1a", "1e", "e3", "99e2.5", "--6", "-+3", "95a54e53"]:
+        assert sol.isNumber(invalid) is False, invalid
+
+
+def test_climb_stairs():
+    sol = load_solution("70-climbing-stairs/climbing-stairs.py")
+    assert sol.climbStairs(2) == 2
+    assert sol.climbStairs(3) == 3
+    assert sol.climbStairs(10) == 89
+
+
+def test_is_n_straight_hand():
+    sol = load_solution("876-hand-of-straights/hand-of-straights.py")
+    assert sol.isNStraightHand([1, 2, 3, 6, 2, 3, 4, 7, 8], 3) is True
+    assert sol.isNStraightHand([1, 2, 3, 4, 5], 4) is False

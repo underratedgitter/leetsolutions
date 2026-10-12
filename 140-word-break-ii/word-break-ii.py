@@ -40,11 +40,6 @@ class Solution:
         # Start the backtracking from index 0
         return backtrack(0)
 
-    def beautifulSubsets(self, param_1, param_2):
-        # Placeholder implementation for the beautifulSubsets method
-        # Replace this with the actual implementation when available
-        pass
-
 # Example Usage for wordBreak
 s1 = "catsanddog"
 wordDict1 = ["cat", "cats", "and", "sand", "dog"]
