@@ -1,10 +1,10 @@
 # LeetCode Solutions
 
-43 problems solved, each in its own directory with the original problem statement alongside the solution.
+42 problems solved across 43 problem directories, each with the original problem statement alongside the solution (Container With Most Water currently holds only the statement).
 
-**10 easy · 21 medium · 12 hard** — mostly Python, with one Java.
+**10 easy · 20 medium · 12 hard** — mostly Python, with one Java.
 
-The weighting is deliberate: 21 medium and 12 hard against 10 easy. Easy problems stop teaching you much fairly quickly.
+The weighting is deliberate: 20 medium and 12 hard against 10 easy. Easy problems stop teaching you much fairly quickly.
 
 ---
 
